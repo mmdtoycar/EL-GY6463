@@ -23,10 +23,10 @@ entity ALU is
 end ALU;
 
 architecture beh of ALU is
-	signal LeftRotate, RightRotate: std_logic_vector(31 downto 0);
+	signal LeftShift, RightShift: std_logic_vector(31 downto 0);
 	begin
 	WITH Oprand2(4 DOWNTO 0) SELECT
-    	LeftRotate<= Oprand1(30 DOWNTO 0) & "0" WHEN "00001",
+    	LeftShift<= Oprand1(30 DOWNTO 0) & "0" WHEN "00001",
 	Oprand1(29 DOWNTO 0) & "00" WHEN "00010",
 	Oprand1(28 DOWNTO 0) & "000" WHEN "00011",
 	Oprand1(27 DOWNTO 0) & "0000" WHEN "00100",
@@ -60,7 +60,7 @@ architecture beh of ALU is
 	Oprand1 WHEN OTHERS;
 	
 	WITH Oprand2(4 DOWNTO 0) SELECT
-    	RightRotate<="0" & oprand1(31 DOWNTO 1)  WHEN "00001",
+    	RightShift<="0" & oprand1(31 DOWNTO 1)  WHEN "00001",
 	 "00" & oprand1(31 DOWNTO 2) WHEN "00010",
 	 "000" & oprand1(31 DOWNTO 3) WHEN "00011",
 	 "0000" & oprand1(31 DOWNTO 4) WHEN "00100",
@@ -98,7 +98,7 @@ architecture beh of ALU is
 						Oprand1 and Oprand2 when(ALUOP="011") else
 						Oprand1 or Oprand2 when(ALUOP="100") else
 						Oprand1 nor Oprand2 when(ALUOP="101") else
-						LeftRotate when(ALUOP="110") else
-						RightRotate when(ALUOP="111") else
+						LeftShift when(ALUOP="110") else
+						RightShift when(ALUOP="111") else
 						x"00000000";
 end beh;
