@@ -29,6 +29,8 @@ package final is
 -- procedure <procedure_name> (<type_declaration> <constant_name>	: in <type_declaration>);
 --
     type mem_array is array(0 to 31) of STD_LOGIC_VECTOR (31 downto 0);
+	 
+	 type instruction_array is array(0 to 249) of STD_LOGIC_VECTOR (31 downto 0);
 end final;
 
 package body final is
