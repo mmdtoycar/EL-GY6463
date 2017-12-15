@@ -3,7 +3,9 @@
   LIBRARY ieee;
   USE ieee.std_logic_1164.ALL;
   USE ieee.numeric_std.ALL;
-	use work.final.all;
+  use work.final.all;
+  use ieee.std_logic_textio.all;
+  USE STD.TEXTIO.ALL;
   ENTITY testbench IS
   END testbench;
 
@@ -70,24 +72,59 @@ end component;
 		  dec <= '0';
 		  -- encryption decryption keyexpansion when ukey = 0 AB = 0 
 		  ukey <= x"00000000000000000000000000000000";
-		  AB <= x"0000000000000000";
 		  wait for 100ns;
 		  key_in <= '1';
         wait for 100 ns;
 		  key_in <= '0';
-		  wait for 200 ns;
+		  wait for 70000 ns;
 		  enc <= '1';
-		  wait for 100 ns;
+	     wait for 100ns;
 		  enc <= '0';
-		  wait for 200 us;
-		  dec <= '1';
-		  wait for 100 ns;
-		  dec <= '0';
-		  wait for 200 us;
+--		  dec <= '1';
+--		  wait for 100ns;
+--		  dec <= '0';
 		  wait;
-		  
-	 
-     END PROCESS tb;
+     END PROCESS;
+	  
+	  check_result: process
+	     file cmdfile: TEXT;
+	     variable L: Line;
+	     variable good:boolean; --status of the read opeartion
+	     variable TIN, TOUT: std_logic_vector(63 downto 0);
+		  begin
+		  FILE_OPEN(cmdfile, "test_vector_result.txt", READ_MODE);
+		  loop
+			if endfile(cmdfile) then --check EOF
+				assert false
+					report "End of file encountered; exiting."
+					severity NOTE;
+				exit;
+			end if;
+		
+			readline(cmdfile, L);
+			next when L'length = 0;
+			read(L, TIN, good);
+				assert good
+					report "Text I/O read error"
+					severity ERROR;
+					
+			read(L, TOUT, good);
+				assert good
+					report "Text I/O read error"
+					severity ERROR;
+		
+			AB <= TIN;
+			wait for clk_period*9000;	
+		   
+			if (data_rdy = '1') then
+				assert (memdata(30)&memdata(31) /= TOUT)
+					report "check succeeded"
+					severity NOTE;
+			end if;
+		end loop;
+		wait;
+				
+	end process;
   --  End Test Bench 
 
   END;
