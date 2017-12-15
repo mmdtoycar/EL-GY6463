@@ -1,7 +1,7 @@
 /* RC5REF.C -- Reference implementation of RC5-32/12/16 in C.        */
 /* Copyright (C) 1995 RSA Data Security, Inc.                        */
 #include <stdio.h>
-#include <conio.h>
+//#include <conio.h>
 #include <stdlib.h>
 #include <time.h>
 typedef unsigned int WORD; /* Should be 32-bit = 4 bytes        */

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-file1 = open("test_vector.txt")
+file1 = open("rc5_1k_test_vectors.txt")
 file2 = open("test_vector_result.txt",'wb')
 result = [] * 33
 while 1:
