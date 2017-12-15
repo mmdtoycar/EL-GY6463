@@ -10,7 +10,7 @@ counter value).
 4. RC5 code in assembly  
 
 ## GROUP MEMBER
+* Mingdi Mao(mm8688)
 * Tingting Yang(ty870)
 * Yuzheng Wang(yw2787)
 * Gaoxiang Yuan(gy549)
-* Mingdi Mao(mm8688)

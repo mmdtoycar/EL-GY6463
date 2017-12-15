@@ -63,16 +63,16 @@ architecture beh of RegisterFile is
         "00000000000000000000000000000000"
     );
 
-begin
-     reg <= reg_mem;
+	begin
+	 reg <= reg_mem;
     RdData1 <= reg_mem(conv_integer(RdReg1));
     RdData2 <= reg_mem(conv_integer(RdReg2));
 
     process(clk, enc, dec)
         begin
 		  if(enc = '1' or dec = '1') then 
-			reg_mem(1) <= AB(63 downto 32);
-			reg_mem(2) <= AB(31 downto 0); 
+			reg_mem(1) <= AB(63 downto 32); 
+			reg_mem(2) <= AB(31 downto 0);
 			reg_mem(3) <= x"00000000";
 			reg_mem(4) <= x"00000000";
 			reg_mem(5) <= x"00000000";

@@ -18,6 +18,6 @@ entity mux is
 end mux;
 
 architecture beh of mux is
-begin
+	begin
 	z <= x when (s='1') else y;
 end beh;

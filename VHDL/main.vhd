@@ -1,26 +1,5 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    00:38:31 11/24/2017
--- Design Name: 
--- Module Name:    main - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
-----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_arith.ALL;
-use IEEE.STD_LOGIC_unsigned.ALL;
 use work.final.all;
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -36,7 +15,6 @@ entity main is
 		  key_in: in std_logic;
 		  enc: in std_logic;
 		  dec: in std_logic;
-		  sample : in std_logic;
 		  reg: out mem_array;
 		  ukey: in std_logic_vector(127 downto 0);
 		  AB: in std_logic_vector(63 downto 0);
@@ -45,8 +23,7 @@ entity main is
 		  data_rdy: out std_logic;
 		  changeInstruction: in std_logic_vector(31 downto 0);
 		  changeAddress: in std_logic_vector(31 downto 0);
-		  changecommit: in std_logic;
-		  PC_value: out std_logic_vector (31 downto 0)
+		  changecommit: in std_logic
 	);
 end main;
 
@@ -116,7 +93,6 @@ component PC is
 		clk: in std_logic;
 		enc, dec: in std_logic;
 		key_in: in std_logic;
-		sample : in std_logic;
 		NextAddress: in std_logic_vector(31 downto 0);
 		CurrentAddress: out std_logic_vector(31 downto 0);
 		key_rdy: out std_logic;
@@ -152,17 +128,13 @@ component RegisterFile is
 	);
 end component;
 
-signal InstructionAddress, add2, Signedimm, JumpAddress, BranchAddress, AddedPC, NextAddr, instr, LastInsAddr, ALUResult, RdData1, RdData2, Oprand2, ReadData, WrtData: std_logic_vector(31 downto 0);
+signal InstructionAddress, add2, Signedimm, JumpAddress, BranchAddress, AddedPC, NextAddress, instruction, LastInsAddress, ALUResult, RdData1, RdData2, Oprand2, ReadData, WrtData: std_logic_vector(31 downto 0);
 signal wrtEnable, Writemem, readmem, isload, isStore, Itype, JMP, Gobranch: std_logic;
 signal WrtReg: std_logic_vector(4 downto 0);
 signal branch, PCsel: std_logic_vector(1 downto 0);
 signal ALUOP: std_logic_vector(2 downto 0);
-
 type state is (loading, running, done);
 signal s: state:= loading;
-
-signal temp: std_logic_vector (1 downto 0);
-
 begin
 	process(clk)
 		begin
@@ -172,7 +144,7 @@ begin
 				when loading =>
 					s <= running; -- give 1 cycle to load the instructions into memory
 				when running =>
-					if NextAddr > LastInsAddr then
+					if NextAddress > LastInsAddress then
 						s <= done; -- stop moving the pc after it has passed the last instruction
 					end if;
 				when others =>
@@ -182,19 +154,19 @@ begin
 	end process;
 	InsMem: InstructionMem port map(
 		ReadAddress => InstructionAddress,
-		instruction => instr,
-		LastInsAddress => LastInsAddr,
+		instruction => instruction,
+		LastInsAddress => LastInsAddress,
 		changecommit => changecommit,
 		changeAddress => changeAddress,
 		changeInstruction => changeInstruction,
 		clk => clk
 	);
 	PCadder: adder port map(
-		add1 => InstructionAddress, 
+		add1 => InstructionAddress,
 		add2 =>	x"00000004",
 		output => AddedPC
 	);
-	JumpAddress <= AddedPC(31 downto 28) & instr(25 downto 0) &"00";
+	JumpAddress <= AddedPC(31 downto 28) & instruction(25 downto 0) &"00";
 	add2 <= SignedImm(29 downto 0) & "00";
 	BranchAdder: adder port map(
 		add1 =>	AddedPC,
@@ -204,10 +176,9 @@ begin
 	
 	PC1: PC port map(
 		clk => clk,
-		NextAddress => NextAddr,
+		NextAddress => NextAddress,
 		CurrentAddress => InstructionAddress,
 		key_in => key_in,
-		sample => sample,
 		enc => enc,
 		dec => dec,
 		data_rdy => data_rdy,
@@ -216,8 +187,8 @@ begin
 	RegisterFile1: RegisterFile port map(
 		clk => clk,
 		WrtEnable => WrtEnable,
-		RdReg1 => instr(25 downto 21),
-		RdReg2 => instr(20 downto 16),
+		RdReg1 => instruction(25 downto 21),
+		RdReg2 => instruction(20 downto 16),
 		WrtReg => WrtReg,
 		WrtData => WrtData,
 		RdData1 => RdData1,
@@ -230,8 +201,8 @@ begin
 	);
 
 	WrtRegMux: mux generic map(5) port map(
-		x => instr(20 downto 16), 
-		y => instr(15 downto 11), 
+		x => instruction(20 downto 16), 
+		y => instruction(15 downto 11), 
 		s => Itype,
 		z => WrtReg
 	);
@@ -241,23 +212,16 @@ begin
 		s => Itype,
 		z => oprand2		
 	);
-	
-	
-	with temp select
-	PCsel <= "01" when "10",
-				"10" when "01",
-				"00" when others;
-	
 	PCMUX1: PCMUX port map(
 		a => AddedPC,
 		b => BranchAddress,
 		c => JumpAddress,
 		sel => PCSel,
-		NextAddress => NextAddr 
+		NextAddress => NextAddress 
 	);
-	
-	
-				
+	PCsel <= "01" when (gobranch = '1') else
+				"10" when (JMP = '1') else
+				"00" ;
 	ALU_DataMem_MUX: mux generic map(32) port map(
 		x => ReadData,
 		y => ALUResult,
@@ -265,7 +229,7 @@ begin
 		z => WrtData
 	);
 	SignExtend1: SignExtend port map(
-		x => instr(15 downto 0),
+		x => instruction(15 downto 0),
 		y => SignedImm
 	);
 	
@@ -297,7 +261,7 @@ begin
 	readMem <= isload;
 	writeMem <= isstore;
 	Decoder1: Decoder port map(
-		instruction => instr,
+		instruction => instruction,
 		wrtEnable => wrtEnable,
 		isload => isload, 
 		isStore => isStore, 
@@ -306,7 +270,5 @@ begin
 		branch => branch,
 		ALUOP =>ALUOP
 	);
-	
-	PC_value <= AddedPC;
 end Behavioral;
 
