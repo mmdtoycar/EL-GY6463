@@ -1,41 +1,41 @@
-addi $0, $12, 12
-shl $12, $13, 1
-addi $13, $14, 1
-lw $14, $3, 0
+addi $0, $12, 12   //store value 12 into $12, i_counter
+shl $12, $13, 1    //$13=2*i
+addi $13, $14, 1   //$14=2*i+1
+lw $14, $3, 0      //$3=S(25)
 hal
-sub $2, $3, $2
-andi $1, $4, 31
-beq $0, $4, 3
-shr $2, $2, 1
+sub $2, $3, $2     //$2=B-S(25)
+andi $1, $4, 31    //put the last five bits of A into $4
+beq $0, $4, 3      //check if the loop has finished
+shr $2, $2, 1      //if not, $2=(B-S(25))>>>1
 subi $4, $4, 1
-bne $0, $4, -3
-or $1, $2, $5
-and $1, $2, $6
-sub $5, $6, $2
-sub $3, $3, $3
-lw $13, $3, 0
+bne $0, $4, -3     //check if the loop has finished
+or $1, $2, $5      //$5=((B-S(25))>>>A) or A
+and $1, $2, $6     //$6=((B-S(25))>>>A) and A
+sub $5, $6, $2     //$2=((B-S(25))>>>A) xor A
+sub $3, $3, $3     //clear $3
+lw $13, $3, 0      //$3=S(24)
 hal
-sub $1, $3, $1
-andi $2, $4, 31
-beq $0, $4, 3
-shr $1, $1, 1
+sub $1, $3, $1     //$1=A-S(24)
+andi $2, $4, 31    //put the last five bits of B into $4
+beq $0, $4, 3      //check if the loop has finished
+shr $1, $1, 1      //if not, $1=(A-S(24))>>>1
 subi $4, $4, 1
-bne $0, $4, -3
-or $1, $2, $5
-and $1, $2, $6
-sub $5, $6, $1
-subi $12, $12, 1
-bne $12, $0, -27
+bne $0, $4, -3     //check if the loop has finished
+or $1, $2, $5      //$5=((A-S(24))>>>B) or B
+and $1, $2, $6     //$6=((A-S(24))>>>B) and B
+sub $5, $6, $1     //$6=((A-S(24))>>>B) xor B
+subi $12, $12, 1   //reduce 1 from i counter
+bne $12, $0, -27   //check if 12 loop has finished, if not, go back to loop
+sub $3, $3, $3     //if yes, clear $3
+lw $0, $3, 1       //$3=S(1)
+hal
+sub $2, $3, $2     //$2=B-S(1)
 sub $3, $3, $3
-lw $0, $3, 1
+lw $0, $3, 0       //$3=S(0)
 hal
-sub $2, $3, $2
-sub $3, $3, $3
-lw $0, $3, 0
+sub $1, $3, $1     //$1=A-S(0)
 hal
-sub $1, $3, $1
+sw $0, $1, 30      //store A value to data memory
 hal
-sw $0, $1, 30
-hal
-sw $0, $2, 31
+sw $0, $2, 31      //store B value to data memory
 hal

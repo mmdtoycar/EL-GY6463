@@ -1,33 +1,32 @@
-addi $0, $10, 26
-addi $0, $11, 4
-addi $0, $12, 78
-lw $6, $3, 0
+addi $0, $10, 26  //$10 stores value 26
+addi $0, $11, 4   //$11 stores value 4
+addi $0, $12, 78  //$12 stores value 78
+lw $6, $3, 0      //load S(0) to $3
 hal
-add $3, $1, $9
-add $9, $2, $9
-shl $9, $9, 3
-add $0, $9, $1
-sw $6, $1, 0
+add $3, $1, $9    //$9=A+S(0)
+add $9, $2, $9    //$9=A+B+S(0)
+shl $9, $9, 3     //$9=(A+B+S(0))<<<3
+add $0, $9, $1    //put A value back to $1
+sw $6, $1, 0      //store the A value back to S(0)
 hal
-add $1, $2, $8
-andi $8, $8, 31
-lw $7, $4, 26
+add $1, $2, $8    //$8=A+B
+andi $8, $8, 31   //put last five bits of A+B into $8
+lw $7, $4, 26     //$4=ukey(0)
 hal
-add $4, $1, $9
-add $9, $2, $9
-beq $0, $8, 3
-shl $9, $9, 1
-subi $8, $8, 1
-bne $0, $8, -3
-add $0, $9, $2
-sw $7, $2, 26
+add $4, $1, $9    //$9=A+ukey(0)
+add $9, $2, $9    //$9=A+B+ukey(0)
+beq $0, $8, 3     //check whether $9 has finished shift 
+shl $9, $9, 1     //$9=(A+B+ukey(0))<<<1
+subi $8, $8, 1    
+bne $0, $8, -3    //check whether $9 has finished shift, if not go back to shift
+add $0, $9, $2    //put B value back to $2
+sw $7, $2, 26     //store B value back to ukey(0)
 hal
-addi $6, $6, 1
-addi $7, $7, 1
-bne $6, $10, 1
-sub $6, $6, $6
-bne $7, $11, 1
-sub $7, $7, $7
-addi $5, $5, 1
-bne $5, $12, -29
-
+addi $6, $6, 1    //$6 is i counter
+addi $7, $7, 1    //$7 is j counter
+bne $6, $10, 1    //check i counter
+sub $6, $6, $6    //if i counter is 26, set back to 0
+bne $7, $11, 1    //check j counter
+sub $7, $7, $7    //if j counter is 4, set back to 0
+addi $5, $5, 1    //$5 is counter for key expansion
+bne $5, $12, -29  //if $5 is not 78, go back to do the loop

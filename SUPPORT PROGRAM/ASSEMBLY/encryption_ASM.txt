@@ -1,36 +1,36 @@
-lw $0, $3, 0      //Encyption
-add $1, $3, $1
-lw $0, $4, 1
-add $2, $4, $2
-addi $0, $12, 12
-or $1, $2, $4
-and $1, $2, $5
-sub $4, $5, $4
-andi $2, $5, 31
-addi $6, $6, 1
-beq $0, $5, 3
-SHL $4, $4, 1
-SUBI $5, $5, 1
-BNE $0, $5, -3
-SHL $6, $7, 1
-LW $7, $3, 0
+lw $0, $3, 0       //$3=S(0)
+add $1, $3, $1     //$1=A+S(0)
+lw $0, $4, 1       //$4=S(1)
+add $2, $4, $2     //$2=B+S(1)
+addi $0, $12, 12   //store value 12 in $12
+or $1, $2, $4      //$4=A or B
+and $1, $2, $5     //$5=A and B
+sub $4, $5, $4     //$4=(A or B)-(A and B)=A xor B
+andi $2, $5, 31    //put the last five bits of B into $5
+addi $6, $6, 1     //$6 is the i counter
+beq $0, $5, 3      //check wether shift has finished
+SHL $4, $4, 1      //if not, $4=(A xor B)<<<1
+SUBI $5, $5, 1 
+BNE $0, $5, -3     //check wether shift has finished
+SHL $6, $7, 1      //$7=$6*2
+LW $7, $3, 0       //$3=S(2)
 hal
-ADD $4, $3, $1
-OR $1, $2, $4
-and $1, $2, $5
-sub $4, $5, $4
-andi $1, $5, 31
-beq $0, $5, 3
-shl $4, $4, 1
+ADD $4, $3, $1     //$1=a_rot+S(2), put A value back to $1
+OR $1, $2, $4      //$4=A or B
+and $1, $2, $5     //$5=A and B
+sub $4, $5, $4     //$4=(A or B)-(A and B)=A xor B
+andi $1, $5, 31    //put the last five bits of A into $5
+beq $0, $5, 3      //check wether shift has finished
+shl $4, $4, 1      //if not, $4=(A xor B)<<<1
 subi $5, $5, 1
-bne $0, $5, -3
-addi $7, $7, 1
-lw $7, $3, 0
+bne $0, $5, -3     //check wether shift has finished
+addi $7, $7, 1     //$7=2*i+1
+lw $7, $3, 0       //$3=S(3)
 hal
-add $4, $3, $2
-bne $12, $6, -26
+add $4, $3, $2     //$2=A+B, put B value back to $2
+bne $12, $6, -26   //check if the 12 loop has finished, if not go back
 hal
-sw $0, $1, 30
+sw $0, $1, 30      //store A value into data memory
 hal
-sw $0, $2, 31
+sw $0, $2, 31      //store A value into data memory
 hal
